@@ -7,7 +7,7 @@
 
         
             {% for blogs in blog%}
-            <h2><a href="/blog?id={{blog.id}}">{{blogs.title}}</a></h2>
+            <h2><a href="/blog?id={{ blogs.id }}">{{blogs.title}}</a></h2>
             <p class="forBorder">{{blogs.body}}</p>
             {% endfor %}
         </div>
