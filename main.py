@@ -1,23 +1,23 @@
 from flask import Flask, request, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
-import cgi
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:Baboy@localhost:8889/build-a-blog'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
+app.secret_key = 'y337kGcys&zP3B'
 
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(1000))
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id')
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, owner_id):
         self.title = title
         self.body = body
-        self.owner = owner
+        self.owner_id = owner_id
 
 class User(db.Model):
     
@@ -31,23 +31,76 @@ class User(db.Model):
         self.password = password
 
 @app.before.request
+def require_login():
+    allowed_routes = ['login', 'register']
+    if request.endpoint not in allowed_routes and 'email' not in session:
+        return redirect('/login')
 
 @app.route('/login')
 def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['username'] = username
+            flash("Logged in")
+            return redirect('/')
+        else:
+            flash('User password incorrect, or user does not exist', 'error')
+
     return render_template('login.html')
 
-@app.route('/signup')
+@app.route('/signup',methods=['POST', 'GET'])
 def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+    if len(username) < 3 or len(username) > 20:
+        flash("Not a valid username", "error")
+
+    elif len(username) < 3 or len(username) > 20:
+        flash("Not a valid username", "error")
+
+    elif password !=verify:
+        flash("Not a valid username", "error")
+
+    else:
+        existing_user = User.query.filter_by(username=username).first()
+
+        if existing_user:
+            flash("User already exists", "error")   
+
+        else:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+
     return render_template('signup.html')
+
+@app.reoute('/logout')
+def logout():
+   # del session('username')
+    return redirect('/blog')
 
 @app.route('/blog', methods=['POST', 'GET'])
 def index():
 
-    if request.args:
-        blog_id = request.args.get("id")
+    if request.args.get('id'):
+        blog_id = request.args.get('id')
         blog = Blog.query.get(blog_id)
 
         return render_template('blogentry.html', blog=blog)
+
+   # else:
+    
+       # if request.args.get('owner')
+            #owner_id = request.args.get('owner')
+           # blog = Blog.query.get(owner_id)
 
     else:
         blogs = Blog.query.all()
