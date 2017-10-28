@@ -32,7 +32,7 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['signup', 'signup']
+    allowed_routes = ['login', 'signup']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
@@ -58,17 +58,17 @@ def signup():
         password = request.form['password']
         verify = request.form['verify']
 
-    if len(username) < 3 or len(username) > 20:
-        flash("Not a valid username", "error")
+        if len(username) < 3 or len(username) > 20:
+            flash("Not a valid username", "error")
 
-    elif len(username) < 3 or len(username) > 20:
-        flash("Not a valid username", "error")
+        elif len(username) < 3 or len(username) > 20:
+            flash("Not a valid username", "error")
 
-    elif password !=verify:
-        flash("Not a valid username", "error")
+        elif password !=verify:
+            flash("Not a valid username", "error")
 
-    else:
-        existing_user = User.query.filter_by(username=username).first()
+        else:
+            existing_user = User.query.filter_by(username=username).first()
 
         if existing_user:
             flash("User already exists", "error")   
