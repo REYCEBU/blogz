@@ -32,7 +32,7 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'Create Account']
+    allowed_routes = ['signup', 'signup']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
@@ -52,45 +52,35 @@ def login():
     return render_template('login.html')
 
 @app.route('/signup',methods=['POST', 'GET'])
-def sign_up():
-    
-   #We got the info from the form submitted by the user
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
 
-    username = request.form['username']
-    password = request.form['password']
-    verify = request.form['verify']
-    email = request.form['email']
+    if len(username) < 3 or len(username) > 20:
+        flash("Not a valid username", "error")
 
-   #Storage for our error messages
+    elif len(username) < 3 or len(username) > 20:
+        flash("Not a valid username", "error")
 
-    username_error = ""
-    password_error = ""
-    verify_error = ""
-    email_error = ""
-
-    if username == "" or " " in username or len(username) < 3 or len(username) > 20:
-       username_error = "Invalid username"
-
-    if password == "" or " " in password or len(password) < 3 or len(password) > 20:
-       password_error = "Invalid password"
-
-    if verify == "" or verify != password:
-        verify_error = "Invalid verification"
-
-    if email != "":
-       if "@" not in email or "." not in email or " " in email or len(email) < 3 or len(email) > 20:
-               email_error = "Invalid email"
-
-    if email_error == "" and username_error == "" and verify_error == "" and password_error == "":
-       return render_template("welcome.html", username = username)
+    elif password !=verify:
+        flash("Not a valid username", "error")
 
     else:
-       return render_template("signup.html", username_error = username_error
-                                          , password_error = password_error
-                                          , verify_error = verify_error
-                                          , email_error = email_error
-                                          , username = username
-                                          , email = email)
+        existing_user = User.query.filter_by(username=username).first()
+
+        if existing_user:
+            flash("User already exists", "error")   
+
+        else:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+
+    return render_template('signup.html')
 
 
 @app.route('/logout')

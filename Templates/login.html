@@ -1,14 +1,15 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1>Log in to Blogz!</h1>
-<p>If you don't have an account, <a href="/Create Account">create account</a>.</p>
-<form action="/login" method="post">
+<h1>Login</h1>
+<p>If you don't have an account, <a href="/signup">signup</a>.</p>
+<p class="error"></p>
+<form method="post">
     <table>
         <tr>
             <td><label for="username">Username</label></td>
             <td>
-                <input name="username" type="username" value="{{ username }}">
+                <input name="username" type="text" value="">
             </td>
         </tr>
         <tr>
@@ -18,6 +19,11 @@
             </td>
         </tr>
     </table>
-    <input type="submit" value="Submit">
+    <input type="submit">
 </form>
+
+
+</body>
+</html>
+
 {% endblock %}

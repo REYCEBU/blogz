@@ -1,19 +1,29 @@
 <!DOCTYPE html>
+
 <html>
     <head>
-        <title>{{title}}</title>
-        <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/stylesheet.css')}}">
+        <title>Blogz</title>
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/styles.css">
     </head>
-<body>
-    <nav>
-        <a href="/blog">Main Blog Page</a>
-        <br>
-        <a href="/newpost">New Post</a>
-        <br>
-        <a href="/login">Login</a>
-        <br>
-        <a href="/logout">Logout</a>
-    </nav>
+    <body>
+        <nav>
+            <ul id="user-account">
+                <li><a href="/login">login</a></li>
+                <li><a href="/logout">logout</a></li>
+            </ul>
+            <ul>
+                <li><a href="/">home</a></li>
+                <li><a href="/blog">all posts</a></li>
+                <li><a href="/blog/newpost">new post</a></li>
+            </ul>
+        </nav>
+<style>
+    .error {
+        color: red;
+    }
+</style>
+        
 
     {% block content %}
     {% endblock %}
