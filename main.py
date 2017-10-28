@@ -1,9 +1,10 @@
+from main import db, Blog, User
 from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:Baboy@localhost:8889/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:Baboy@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 app.secret_key = 'y337kGcys&zP3B'
@@ -24,7 +25,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(120))
-    blog = db.relationship('Blog', backref='owner')
+    blog = db.relationship('blogs', backref='owner')
 
     def __init__(self, username, password):
         self.username = username
@@ -32,8 +33,8 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'register']
-    if request.endpoint not in allowed_routes and 'email' not in session:
+    allowed_routes = ['login', 'Create Account']
+    if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
 @app.route('/login')
@@ -45,7 +46,7 @@ def login():
         if user and user.password == password:
             session['username'] = username
             flash("Logged in")
-            return redirect('/')
+            return redirect('/newpost')
         else:
             flash('User password incorrect, or user does not exist', 'error')
 
@@ -85,7 +86,7 @@ def sign_up():
        return render_template("welcome.html", username = username)
 
     else:
-       return render_template("index.html", username_error = username_error
+       return render_template("signup.html", username_error = username_error
                                           , password_error = password_error
                                           , verify_error = verify_error
                                           , email_error = email_error
@@ -121,7 +122,7 @@ def index():
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_blog():
     if request.method == 'GET':
-        return render_template('newpost.html', title="Add Blog Entry")
+        return render_template('newpost.html', title="Login")
 
     if request.method == 'POST':
         blog_title = request.form['title']
