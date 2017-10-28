@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -24,13 +24,13 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(120))
-    blog = db.relationships('Blog', backref='owner')
+    blog = db.relationship('Blog', backref='owner')
 
     def __init__(self, username, password):
         self.username = username
         self.password = password
 
-@app.before.request
+@app.before_request
 def require_login():
     allowed_routes = ['login', 'register']
     if request.endpoint not in allowed_routes and 'email' not in session:
@@ -82,7 +82,7 @@ def signup():
 
     return render_template('signup.html')
 
-@app.reoute('/logout')
+@app.route('/logout')
 def logout():
    # del session('username')
     return redirect('/blog')
