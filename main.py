@@ -1,4 +1,3 @@
-from main import db, Blog, User
 from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 
