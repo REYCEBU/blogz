@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -38,49 +38,59 @@ def require_login():
 
 @app.route('/login')
 def login():
+    flash("test")
+    return render_template('newpost.html')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        flash(username +":"+password)
         user = User.query.filter_by(username=username).first()
         if user and user.password == password:
             session['username'] = username
             flash("Logged in")
             return redirect('/newpost')
         else:
+            raise Exception
             flash('User password incorrect, or user does not exist', 'error')
 
     return render_template('login.html')
 
 @app.route('/signup',methods=['POST', 'GET'])
 def signup():
+    
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
 
-        if len(username) < 3 or len(username) > 20:
-            flash("Not a valid username", "error")
+        # if len(username) < 3 or len(username) > 20:
+        #     flash("Not a valid username", "error")
 
-        elif len(username) < 3 or len(username) > 20:
-            flash("Not a valid username", "error")
+        #maybe change to password 
+        #elif len(username) < 3 or len(username) > 20:
+            #lash("Not a valid username", "error")
 
-        elif password !=verify:
-            flash("Not a valid username", "error")
+        # elif password !=verify:
+        #     flash("Not a valid username", "error")
 
-        else:
-            existing_user = User.query.filter_by(username=username).first()
+        # else:
+        #     existing_user = User.query.filter_by(username=username).first()
 
-        if existing_user:
-            flash("User already exists", "error")   
+        # if existing_user:
+        #     flash("User already exists", "error")   
 
-        else:
-            new_user = User(username, password)
-            db.session.add(new_user)
-            db.session.commit()
-            session['username'] = username
-            return redirect('/newpost')
+        # else:
+        #     new_user = User(username, password)
+        #     db.session.add(new_user)
+        #     db.session.commit()
+        #     session['username'] = username
+        return redirect('/newpost')
 
-    return render_template('signup.html')
+    if request.method == "GET":
+        return render_template('signup.html')
+
+    
 
 
 @app.route('/logout')
@@ -111,7 +121,7 @@ def index():
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_blog():
     if request.method == 'GET':
-        return render_template('newpost.html', title="Login")
+        return render_template('newpost.html')
 
     if request.method == 'POST':
         blog_title = request.form['title']
