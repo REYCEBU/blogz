@@ -24,7 +24,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True)
     password = db.Column(db.String(120))
-    blog = db.relationship("Blog", backref='owner')
+    blog = db.relationship('Blog', backref='owner')
 
     def __init__(self, username, password):
         self.username = username
@@ -32,11 +32,11 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup']
+    allowed_routes = ['login', 'signup', 'index']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
-@app.route('/login')
+@app.route('/login',methods=['POST', 'GET'])
 def login():
     flash("test")
     
@@ -63,6 +63,7 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
+        existing_user = User.query.filter_by(username=username).first()
 
         if len(username) < 3 or len(username) > 20:
             flash("Not a valid username", "error")
@@ -74,8 +75,8 @@ def signup():
         elif password !=verify:
             flash("Not a valid username", "error")
 
-        else:
-            existing_user = User.query.filter_by(username=username).first()
+       
+            
 
         if existing_user:
             flash("User already exists", "error")  
@@ -95,7 +96,7 @@ def signup():
 
 @app.route('/logout')
 def logout():
-   # del session('username')
+    del session['username']
     return redirect('/blog')
 
 @app.route('/blog', methods=['POST', 'GET'])
@@ -103,11 +104,11 @@ def index():
     
     #owner = User.query.filter_by(username=session['username']).first()
 
-    if request.args.get('id'):
-        blog_id = request.args.get('id')
-        blog = Blog.query.get(blog_id)
-
-        return render_template('blogentry.html', blog=blog)
+    if request.args.get('userid'):
+        user_id = request.args.get('userid')
+        user = User.query.get(user_id)
+        blogs = Blog.query.filter_by(owner=user).all()
+        return render_template('blog.html', blogs=blogs)
 
     #else:
     
@@ -115,10 +116,15 @@ def index():
         #owner_id = request.args.get('owner')
         #blog = Blog.query.get(owner_id)
 
-    else:
-        blogs = Blog.query.all()
+    
+    blogs = Blog.query.all()
 
-        return render_template('blog.html', title="Build A Blog", blog=blogs)
+    return render_template('blog.html', title="Build A Blog", blogs=blogs)
+
+@app.route('/singleUser.html', methods = ['GET'])
+def home():
+    users = User.query.all()
+    return render_template('singleUser.html', users=users)
 
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_blog():
@@ -138,7 +144,9 @@ def add_blog():
             body_error = "Invalid Body"
 
         if not title_error and not body_error:
-            new_blog = Blog(blog_title, blog_body)
+            owner = User.query.filter_by(username=session['username']).first()
+            #owner_id = owner.id
+            new_blog = Blog(blog_title, blog_body, owner)
             db.session.add(new_blog)
             db.session.commit()
             query_param_url = "/blog?id=" + str(new_blog.id)
